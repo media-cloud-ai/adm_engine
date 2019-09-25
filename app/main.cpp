@@ -17,6 +17,7 @@
 
 using namespace ear;
 using namespace adm;
+using namespace admrenderer;
 
 int main(int argc, char **argv) {
 
