@@ -1,7 +1,8 @@
+#pragma once
 
-#include "ear/ear.hpp"
-#include "bw64/bw64.hpp"
-#include "adm/adm.hpp"
+#include <ear/ear.hpp>
+#include <bw64/bw64.hpp>
+#include <adm/adm.hpp>
 
 #include "audio_object_renderer.hpp"
 

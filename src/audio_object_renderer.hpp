@@ -1,7 +1,7 @@
+#pragma once
 
-#include "ear/ear.hpp"
-#include "adm/adm.hpp"
-
+#include <ear/ear.hpp>
+#include <adm/adm.hpp>
 
 namespace admrenderer {
 

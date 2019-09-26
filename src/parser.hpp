@@ -1,9 +1,9 @@
 #pragma once
 
-#include "adm/parse.hpp"
-#include "adm/write.hpp"
+#include <adm/parse.hpp>
+#include <adm/write.hpp>
 
-#include "bw64/bw64.hpp"
+#include <bw64/bw64.hpp>
 
 namespace admrenderer {
 

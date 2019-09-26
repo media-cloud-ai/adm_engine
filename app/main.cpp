@@ -3,14 +3,14 @@
 #include <sstream>
 #include <vector>
 
-#include "adm/common_definitions.hpp"
-#include "adm/parse.hpp"
-#include "adm/write.hpp"
+#include <adm/common_definitions.hpp>
+#include <adm/parse.hpp>
+#include <adm/write.hpp>
 
-#include "bw64/bw64.hpp"
+#include <bw64/bw64.hpp>
 
-#include "ear/ear.hpp"
-#include "ear/dsp/dsp.hpp"
+#include <ear/ear.hpp>
+#include <ear/dsp/dsp.hpp>
 
 #include "renderer.hpp"
 
