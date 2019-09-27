@@ -8,7 +8,7 @@ namespace admrenderer {
 
   std::shared_ptr<adm::Document> parseAdmXml(const std::unique_ptr<bw64::Bw64Reader>& bw64File) {
     // Extract ADM XML from BWF64
-    std::cout << std::endl << "### Extract ADM XML from BWF64:" << std::endl;
+    std::cout << std::endl << "### ADM XML from BWF64 file:" << std::endl;
     std::stringstream axmlStringstream;
     if (bw64File->axmlChunk()) {
       bw64File->axmlChunk()->write(axmlStringstream);
@@ -18,11 +18,8 @@ namespace admrenderer {
       exit(1);
     }
 
-    // Read file ADM composition
-    std::cout << std::endl << "### Read ADM composition:" << std::endl;
+    // Read file ADM composition and write XML data to stdout
     auto admDocument = adm::parseXml(axmlStringstream);
-
-    // write XML data to stdout
     std::stringstream xmlStream;
     adm::writeXml(xmlStream, admDocument);
     std::cout << xmlStream.str();

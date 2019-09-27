@@ -142,7 +142,7 @@ void renderAudioProgramme(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
                           const std::shared_ptr<adm::AudioProgramme>& audioProgramme,
                           const ear::Layout& outputLayout,
                           const std::string& outputDirectory) {
-  std::cout << "Render audio programme: " << toString(audioProgramme) << std::endl;
+  std::cout << "### Render audio programme: " << toString(audioProgramme) << std::endl;
 
   std::vector<AudioObjectRenderer> renderers;
   for(const std::shared_ptr<adm::AudioObject> audioObject : getAudioObjects(audioProgramme)) {
@@ -167,7 +167,7 @@ void renderAudioProgramme(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
     bw64::writeFile(outputFileName.str(), outputLayout.channels().size(), inputFile->sampleRate(), inputFile->bitDepth(), chna, axml);
 
   renderToFile(inputFile, renderers, outputFile);
-  std::cout << "/// DONE: " << outputFileName.str() << std::endl;
+  std::cout << " >> Done: " << outputFileName.str() << std::endl;
 }
 
 void renderAudioObject(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
