@@ -7,8 +7,13 @@
 
 namespace admrenderer {
 
-  std::shared_ptr<adm::Document> parseAdmXml(const std::unique_ptr<bw64::Bw64Reader>& bw64File);
-  std::shared_ptr<bw64::ChnaChunk> parseAdmChunk(const std::unique_ptr<bw64::Bw64Reader>& bw64File);
+  std::shared_ptr<adm::Document> getAdmDocument(const std::shared_ptr<bw64::AxmlChunk>& axmlChunk);
+  std::shared_ptr<bw64::AxmlChunk> parseAdmXmlChunk(const std::unique_ptr<bw64::Bw64Reader>& bw64File);
+  std::shared_ptr<bw64::ChnaChunk> parseAdmChnaChunk(const std::unique_ptr<bw64::Bw64Reader>& bw64File);
+
+  void displayAdmDocument(const std::shared_ptr<adm::Document>& admDocument);
+  void displayChnaChunk(const std::shared_ptr<bw64::ChnaChunk>& chnaChunk);
+  void displayBw64FileInfos(const std::unique_ptr<bw64::Bw64Reader>& bw64File);
 
   void parseAudioProgramme(const std::shared_ptr<adm::AudioProgramme>& audioProgramme);
   void parseAudioContent(const std::shared_ptr<adm::AudioContent>& audioContent);

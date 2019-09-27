@@ -10,7 +10,7 @@
 namespace admrenderer {
 
 void render(const std::unique_ptr<bw64::Bw64Reader>& inputFile, const std::string& outputLayout, const std::string& outputDirectory, const float dialogGain) {
-  auto admDocument = parseAdmXml(inputFile);
+  auto admDocument = getAdmDocument(parseAdmXmlChunk(inputFile));
   const ear::Layout layout = ear::getLayout(outputLayout);
 
   /// Based on Rec. ITU-R  BS.2127-0, 5.2 Determination of Rendering Items (Fig. 3)
@@ -34,7 +34,7 @@ void render(const std::unique_ptr<bw64::Bw64Reader>& inputFile, const std::strin
     return;
   }
 
-  auto chnaChunk = parseAdmChunk(inputFile);
+  auto chnaChunk = parseAdmChnaChunk(inputFile);
   if (chnaChunk) {
     std::vector<bw64::AudioId> audioIds = chnaChunk->audioIds();
     if(audioIds.size()) {

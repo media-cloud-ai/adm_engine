@@ -8,8 +8,9 @@
 
 int dumpBw64AdmFile(const char* path) {
   auto bw64File = bw64::readFile(path);
-  admrenderer::parseAdmChunk(bw64File);
-  admrenderer::parseAdmXml(bw64File);
+  admrenderer::displayBw64FileInfos(bw64File);
+  admrenderer::displayAdmDocument(admrenderer::getAdmDocument(admrenderer::parseAdmXmlChunk(bw64File)));
+  admrenderer::displayChnaChunk(admrenderer::parseAdmChnaChunk(bw64File));
   return 0;
 }
 
@@ -17,7 +18,6 @@ int renderAdmContent(const char* input, const char* destination, const float dia
   auto bw64File = bw64::readFile(input);
   const std::string outputDirectory(destination);
   const std::string outputLayout("0+2+0"); // TODO: get it from args
-  admrenderer::parseAdmChunk(bw64File);
   admrenderer::render(bw64File, outputLayout, outputDirectory, dialogueGain);
   return 0;
 }
