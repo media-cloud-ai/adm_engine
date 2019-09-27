@@ -20,6 +20,8 @@ public:
 
   size_t getNbOutputTracks() const;
 
+  void renderAudioFrame(const float* in, float* out);
+
 private:
   void setDirectSpeakerGains();
   void init();

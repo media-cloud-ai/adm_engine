@@ -44,6 +44,29 @@ void render(const std::unique_ptr<bw64::Bw64Reader>& inputFile, const std::strin
   }
 }
 
+size_t renderBlock(const std::vector<AudioObjectRenderer>& renderers,
+                   const size_t inputNbChannels,
+                   const size_t outputNbChannels,
+                   const size_t nbFrames,
+                   const float* input,
+                   float* output) {
+  size_t frame = 0;
+  size_t read = 0;
+  size_t written = 0;
+
+  while(frame < nbFrames) {
+    float* ocframe = &output[written];
+    const float* icframe = &input[read];
+    for(AudioObjectRenderer renderer : renderers) {
+      renderer.renderAudioFrame(icframe, ocframe);
+    }
+    written += outputNbChannels;
+    read += inputNbChannels;
+    frame++;
+  }
+  return written;
+}
+
 void renderToFile(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
             const std::vector<AudioObjectRenderer>& renderers,
             const std::unique_ptr<bw64::Bw64Writer>& outputFile) {
@@ -51,39 +74,15 @@ void renderToFile(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
   // Buffers
   const size_t inputNbChannels = inputFile->channels();
   const size_t outputNbChannels = outputFile->channels();
-  std::vector<float> fileInputBuffer(BLOCK_SIZE * inputNbChannels);
-  std::vector<float> fileOutputBuffer;
 
   // Read file, render with gains and write output file
-  size_t filePosition = 0;
+  float inputBuffer[BLOCK_SIZE * inputNbChannels] = {0.0,}; // nb of samples * nb input channels
   while (!inputFile->eof()) {
     // Read a data block
-    auto readFrames = inputFile->read(&fileInputBuffer[0], BLOCK_SIZE);
-    float* ocsample = new float[outputNbChannels];
-    size_t frame = 0;
-    size_t sample = 0;
-
-    while(frame < readFrames) {
-      for (int oc = 0; oc < outputNbChannels; ++oc) {
-        // for each output channel, apply the mapped input channels...
-        ocsample[oc] = 0.0;
-        for(const AudioObjectRenderer render : renderers) {
-          for(const size_t ic : render.getTrackMapping(oc)) {
-            ocsample[oc] += fileInputBuffer[sample + ic] * render.getTrackGain(oc);
-          }
-        }
-      }
-      filePosition += inputNbChannels;
-      sample += inputNbChannels;
-      for (int oc = 0; oc < outputNbChannels; ++oc) {
-        fileOutputBuffer.push_back(ocsample[oc]); // FIXME : double sound in output ?
-      }
-      frame++;
-    }
-
-    auto wroteFrames = outputFile->write(&fileOutputBuffer[0], readFrames);
-    fileOutputBuffer.clear();
-    delete[] ocsample;
+    float outputBuffer[BLOCK_SIZE * outputNbChannels] = {0.0,}; // nb of samples * nb output channels
+    auto nbFrames = inputFile->read(inputBuffer, BLOCK_SIZE);
+    renderBlock(renderers, inputNbChannels, outputNbChannels, nbFrames, inputBuffer, outputBuffer);
+    outputFile->write(outputBuffer, nbFrames);
   }
   inputFile->seek(0);
 }

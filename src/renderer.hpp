@@ -20,6 +20,14 @@ void render(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
             const std::string& outputLayout,
             const std::string& outputDirectory,
             const float dialogGain);
+
+size_t renderBlock(const std::vector<AudioObjectRenderer>& renderers,
+                   const size_t inputNbChannels,
+                   const size_t outputNbChannels,
+                   const size_t nbFrames,
+                   const float* input,
+                   float* output);
+
 void renderToFile(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
             const std::vector<AudioObjectRenderer>& renderers,
             const std::unique_ptr<bw64::Bw64Writer>& outputFile);

@@ -41,6 +41,15 @@ size_t AudioObjectRenderer::getNbOutputTracks() const {
   return _outputLayout.channels().size();
 }
 
+void AudioObjectRenderer::renderAudioFrame(const float* inputFrame, float* outputFrame) {
+  for (int oc = 0; oc < getNbOutputTracks(); ++oc) {
+  // for each output channel, apply the mapped input channels...
+    for(const size_t ic : getTrackMapping(oc)) {
+      outputFrame[oc] += inputFrame[ic] * getTrackGain(oc);
+    }
+  }
+}
+
 void AudioObjectRenderer::setDirectSpeakerGains() {
 
   // calculate gains for direct speakers
