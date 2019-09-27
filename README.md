@@ -5,6 +5,7 @@
 The project depends on these libraries:
 - [libadm](https://github.com/IRT-Open-Source/libadm/)
 - [libear](https://github.com/ebu/libear)
+- [libbw64](https://github.com/IRT-Open-Source/libbw64)
 
 ### Build & Install
 ```
