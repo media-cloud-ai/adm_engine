@@ -1,5 +1,11 @@
 # ADM Audio Renderer
 
+### Required dependencies
+
+The project depends on these libraries:
+- [libadm](https://github.com/IRT-Open-Source/libadm/)
+- [libear](https://github.com/ebu/libear)
+
 ### Build & Install
 ```
 mkdir build && cd build
