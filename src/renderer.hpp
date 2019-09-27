@@ -16,33 +16,33 @@ namespace admrenderer {
 
 const unsigned int BLOCK_SIZE = 4096; // in frames
 
-void render(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
-            const std::string& outputLayout,
-            const std::string& outputDirectory,
-            const float dialogGain);
+class Renderer {
 
-size_t renderBlock(const std::vector<AudioObjectRenderer>& renderers,
-                   const size_t inputNbChannels,
-                   const size_t outputNbChannels,
-                   const size_t nbFrames,
-                   const float* input,
-                   float* output);
+public:
+  Renderer(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
+           const std::string& outputLayout,
+           const std::string& outputDirectory,
+           const float dialogGain);
 
-void renderToFile(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
-            const std::vector<AudioObjectRenderer>& renderers,
-            const std::unique_ptr<bw64::Bw64Writer>& outputFile);
+  void process();
+  void processAudioProgramme(const std::shared_ptr<adm::AudioProgramme>& audioProgramme);
+  void processAudioObject(const std::shared_ptr<adm::AudioObject>& audioObject);
 
-void renderAudioProgramme(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
-                          const std::shared_ptr<adm::AudioProgramme>& audioProgramme,
-                          const ear::Layout& outputLayout,
-                          const std::string& outputDirectory);
+  size_t processBlock(const size_t nbFrames,
+                      const float* input,
+                      float* output);
 
-void renderAudioObject(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
-                       const std::shared_ptr<adm::AudioObject>& audioObject,
-                       const ear::Layout& outputLayout,
-                       const std::string& outputDirectory);
+  void toFile(const std::unique_ptr<bw64::Bw64Writer>& outputFile);
 
-void checkAudioPackFormatId(const adm::AudioPackFormatId& audioPackFormatId, const size_t nbAudioTracks);
+private:
+  const std::unique_ptr<bw64::Bw64Reader>& _inputFile;
+  const size_t _inputNbChannels;
+  const ear::Layout _outputLayout;
+  const std::string _outputDirectory;
+  const float _dialogGain;
+
+  std::vector<AudioObjectRenderer> _renderers;
+};
 
 std::shared_ptr<adm::Document> createAdmDocument(const std::shared_ptr<adm::AudioProgramme>& audioProgramme, const ear::Layout& outputLayout);
 std::shared_ptr<adm::Document> createAdmDocument(const std::shared_ptr<adm::AudioObject>& audioObject, const ear::Layout& outputLayout);

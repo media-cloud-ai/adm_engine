@@ -5,12 +5,13 @@
 #include "renderer.hpp"
 #include "parser.hpp"
 
+using namespace admrenderer;
 
 int dumpBw64AdmFile(const char* path) {
   auto bw64File = bw64::readFile(path);
-  admrenderer::displayBw64FileInfos(bw64File);
-  admrenderer::displayAdmDocument(admrenderer::getAdmDocument(admrenderer::parseAdmXmlChunk(bw64File)));
-  admrenderer::displayChnaChunk(admrenderer::parseAdmChnaChunk(bw64File));
+  displayBw64FileInfos(bw64File);
+  displayAdmDocument(getAdmDocument(parseAdmXmlChunk(bw64File)));
+  displayChnaChunk(parseAdmChnaChunk(bw64File));
   return 0;
 }
 
@@ -18,7 +19,8 @@ int renderAdmContent(const char* input, const char* destination, const float dia
   auto bw64File = bw64::readFile(input);
   const std::string outputDirectory(destination);
   const std::string outputLayout("0+2+0"); // TODO: get it from args
-  admrenderer::render(bw64File, outputLayout, outputDirectory, dialogueGain);
+  Renderer renderer(bw64File, outputLayout, outputDirectory, dialogueGain);
+  renderer.process();
   return 0;
 }
 
