@@ -28,8 +28,8 @@ void render(const std::unique_ptr<bw64::Bw64Reader>& inputFile, const std::strin
   if(audioObjects.size()) {
     // // TODO: parse audio objects for AudioPackFormatRef, AudioTrackUIDRef and nested AudioObjects
     for(auto audioObject : audioObjects) {
-      parseAudioObject(audioObject);
-      // renderAudioObject(audioObject);
+      // parseAudioObject(audioObject);
+      renderAudioObject(inputFile, audioObject, layout, outputDirectory);
     }
     return;
   }
@@ -92,7 +92,24 @@ std::shared_ptr<adm::Document> createAdmDocument(const std::shared_ptr<adm::Audi
   std::shared_ptr<adm::Document> admDocument = adm::Document::create();
   auto admProgramme = adm::AudioProgramme::create(audioProgramme->get<adm::AudioProgrammeName>());
   auto mixContent = adm::AudioContent::create(adm::AudioContentName("Mix"));
-  auto mixObject = adm::AudioObject::create(adm::AudioObjectName("Mix"));
+  auto mixObject = createAdmAudioObject(adm::AudioObjectName("Mix"), outputLayout);
+  mixContent->addReference(mixObject);
+  admProgramme->addReference(mixContent);
+  admDocument->add(admProgramme);
+  // adm::reassignIds(admDocument);
+  return admDocument;
+}
+
+std::shared_ptr<adm::Document> createAdmDocument(const std::shared_ptr<adm::AudioObject>& audioObject, const ear::Layout& outputLayout) {
+  std::shared_ptr<adm::Document> admDocument = adm::Document::create();
+  auto mixObject = createAdmAudioObject(audioObject->get<adm::AudioObjectName>(), outputLayout);
+  admDocument->add(mixObject);
+  // adm::reassignIds(admDocument);
+  return admDocument;
+}
+
+std::shared_ptr<adm::AudioObject> createAdmAudioObject(const adm::AudioObjectName& audioObjectName, const ear::Layout& outputLayout) {
+  auto mixObject = adm::AudioObject::create(audioObjectName);
   auto mixPackFormat = adm::AudioPackFormat::create(adm::AudioPackFormatName(""), adm::TypeDefinition::DIRECT_SPEAKERS);
   adm::AudioPackFormatId mixPackFormatId = adm::audioPackFormatLookupTable().at(outputLayout.name());
   mixPackFormat->set(mixPackFormatId);
@@ -110,10 +127,7 @@ std::shared_ptr<adm::Document> createAdmDocument(const std::shared_ptr<adm::Audi
 
     mixObject->addReference(audioTrackUid);
   }
-  mixContent->addReference(mixObject);
-  admProgramme->addReference(mixContent);
-  admDocument->add(admProgramme);
-  return admDocument;
+  return mixObject;
 }
 
 std::shared_ptr<bw64::AxmlChunk> createAxmlChunk(const std::shared_ptr<adm::Document>& admDocument) {
@@ -174,7 +188,30 @@ void renderAudioObject(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
                           const std::shared_ptr<adm::AudioObject>& audioObject,
                           const ear::Layout& outputLayout,
                           const std::string& outputDirectory) {
-  // TODO
+  std::cout << "### Render audio object: " << toString(audioObject) << std::endl;
+
+  std::vector<AudioObjectRenderer> renderers;
+  AudioObjectRenderer renderer(outputLayout, audioObject);
+  std::cout << " >> Add renderer: " << renderer << std::endl;
+  renderers.push_back(renderer);
+
+  // Create output programme ADM
+  std::shared_ptr<adm::Document> document = createAdmDocument(audioObject, outputLayout);
+  std::shared_ptr<bw64::AxmlChunk> axml = createAxmlChunk(document);
+  std::shared_ptr<bw64::ChnaChunk> chna = createChnaChunk(document);
+
+  // Output file
+  std::stringstream outputFileName;
+  outputFileName << outputDirectory;
+  if(outputDirectory.back() != std::string(PATH_SEPARATOR).back()) {
+    outputFileName << PATH_SEPARATOR;
+  }
+  outputFileName << audioObject->get<adm::AudioObjectName>().get() << ".wav";
+  std::unique_ptr<bw64::Bw64Writer> outputFile =
+    bw64::writeFile(outputFileName.str(), outputLayout.channels().size(), inputFile->sampleRate(), inputFile->bitDepth(), chna, axml);
+
+  renderToFile(inputFile, renderers, outputFile);
+  std::cout << " >> Done: " << outputFileName.str() << std::endl;
 }
 
 }
