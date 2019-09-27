@@ -1,6 +1,9 @@
 #include <algorithm>
 #include <iomanip>
 
+#include <adm/utilities/id_assignment.hpp>
+#include <adm/common_definitions.hpp>
+
 #include "renderer.hpp"
 #include "parser.hpp"
 
@@ -85,6 +88,56 @@ void renderToFile(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
   inputFile->seek(0);
 }
 
+std::shared_ptr<adm::Document> createAdmDocument(const std::shared_ptr<adm::AudioProgramme>& audioProgramme, const ear::Layout& outputLayout) {
+  std::shared_ptr<adm::Document> admDocument = adm::Document::create();
+  auto admProgramme = adm::AudioProgramme::create(audioProgramme->get<adm::AudioProgrammeName>());
+  auto mixContent = adm::AudioContent::create(adm::AudioContentName("Mix"));
+  auto mixObject = adm::AudioObject::create(adm::AudioObjectName("Mix"));
+  auto mixPackFormat = adm::AudioPackFormat::create(adm::AudioPackFormatName(""), adm::TypeDefinition::DIRECT_SPEAKERS);
+  adm::AudioPackFormatId mixPackFormatId = adm::audioPackFormatLookupTable().at(outputLayout.name());
+  mixPackFormat->set(mixPackFormatId);
+
+  mixObject->addReference(mixPackFormat);
+  for (auto channel : outputLayout.channels())
+  {
+    auto audioTrackUid = adm::AudioTrackUid::create();
+    audioTrackUid->setReference(mixPackFormat);
+
+    adm::AudioTrackFormatId audioTrackFormatId = adm::audioTrackFormatLookupTable().at(channel.name());
+    auto audioTrackFormat = adm::AudioTrackFormat::create(adm::AudioTrackFormatName(""), adm::FormatDefinition::PCM);
+    audioTrackFormat->set(audioTrackFormatId);
+    audioTrackUid->setReference(audioTrackFormat);
+
+    mixObject->addReference(audioTrackUid);
+  }
+  mixContent->addReference(mixObject);
+  admProgramme->addReference(mixContent);
+  admDocument->add(admProgramme);
+  return admDocument;
+}
+
+std::shared_ptr<bw64::AxmlChunk> createAxmlChunk(const std::shared_ptr<adm::Document>& admDocument) {
+  std::stringstream xmlStream;
+  adm::writeXml(xmlStream, admDocument);
+  return std::shared_ptr<bw64::AxmlChunk>(new bw64::AxmlChunk(xmlStream.str()));
+}
+
+std::shared_ptr<bw64::ChnaChunk> createChnaChunk(const std::shared_ptr<adm::Document>& admDocument) {
+  std::vector<bw64::AudioId> audioIds;
+
+  auto audioObjects = admDocument->getElements<adm::AudioObject>();
+  for(auto audioObject : audioObjects) {
+    for(auto audioTrackUid : audioObject->getReferences<adm::AudioTrackUid>()) {
+      audioIds.push_back(bw64::AudioId(audioTrackUid->get<adm::AudioTrackUidId>().get<adm::AudioTrackUidIdValue>().get(),
+                                       formatId(audioTrackUid->get<adm::AudioTrackUidId>()),
+                                       formatId(audioTrackUid->getReference<adm::AudioTrackFormat>()->get<adm::AudioTrackFormatId>()),
+                                       formatId(audioTrackUid->getReference<adm::AudioPackFormat>()->get<adm::AudioPackFormatId>())
+                                      ));
+    }
+  }
+  return std::shared_ptr<bw64::ChnaChunk>(new bw64::ChnaChunk(audioIds));
+}
+
 void renderAudioProgramme(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
                           const std::shared_ptr<adm::AudioProgramme>& audioProgramme,
                           const ear::Layout& outputLayout,
@@ -98,6 +151,11 @@ void renderAudioProgramme(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
     renderers.push_back(renderer);
   }
 
+  // Create output programme ADM
+  std::shared_ptr<adm::Document> document = createAdmDocument(audioProgramme, outputLayout);
+  std::shared_ptr<bw64::AxmlChunk> axml = createAxmlChunk(document);
+  std::shared_ptr<bw64::ChnaChunk> chna = createChnaChunk(document);
+
   // Output file
   std::stringstream outputFileName;
   outputFileName << outputDirectory;
@@ -105,7 +163,8 @@ void renderAudioProgramme(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
     outputFileName << PATH_SEPARATOR;
   }
   outputFileName << audioProgramme->get<adm::AudioProgrammeName>().get() << ".wav";
-  std::unique_ptr<bw64::Bw64Writer> outputFile = bw64::writeFile(outputFileName.str(), outputLayout.channels().size(), inputFile->sampleRate(), inputFile->bitDepth()/*, chna, axml*/);
+  std::unique_ptr<bw64::Bw64Writer> outputFile =
+    bw64::writeFile(outputFileName.str(), outputLayout.channels().size(), inputFile->sampleRate(), inputFile->bitDepth(), chna, axml);
 
   renderToFile(inputFile, renderers, outputFile);
   std::cout << "/// DONE: " << outputFileName.str() << std::endl;

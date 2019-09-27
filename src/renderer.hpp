@@ -36,6 +36,10 @@ void renderAudioObject(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
 
 void checkAudioPackFormatId(const adm::AudioPackFormatId& audioPackFormatId, const size_t nbAudioTracks);
 
+std::shared_ptr<adm::Document> createAdmDocument(const std::shared_ptr<adm::AudioProgramme>& audioProgramme, const ear::Layout& outputLayout);
+std::shared_ptr<bw64::AxmlChunk> createAxmlChunk(const std::shared_ptr<adm::Document>& admDocument);
+std::shared_ptr<bw64::ChnaChunk> createChnaChunk(const std::shared_ptr<adm::Document>& admDocument);
+
 template<class T>
 std::string toString(const std::shared_ptr<T>& admElement) {
   std::stringstream ss;
