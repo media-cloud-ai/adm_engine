@@ -75,6 +75,7 @@ std::shared_ptr<bw64::ChnaChunk> Renderer::getAdmChnaChunk() const {
 }
 
 void Renderer::initAudioProgrammeRendering(const std::shared_ptr<adm::AudioProgramme>& audioProgramme) {
+  _renderers.clear();
   for(const std::shared_ptr<adm::AudioObject> audioObject : getAudioObjects(audioProgramme)) {
     AudioObjectRenderer renderer(_outputLayout, audioObject);
     std::cout << " >> Add renderer: " << renderer << std::endl;
@@ -83,6 +84,7 @@ void Renderer::initAudioProgrammeRendering(const std::shared_ptr<adm::AudioProgr
 }
 
 void Renderer::initAudioObjectRendering(const std::shared_ptr<adm::AudioObject>& audioObject) {
+  _renderers.clear();
   AudioObjectRenderer renderer(_outputLayout, audioObject);
   std::cout << " >> Add renderer: " << renderer << std::endl;
   _renderers.push_back(renderer);
