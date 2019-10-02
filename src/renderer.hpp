@@ -25,14 +25,26 @@ public:
            const float dialogGain);
 
   void process();
+
+  void initAudioProgrammeRendering(const std::shared_ptr<adm::AudioProgramme>& audioProgramme);
+  void initAudioObjectRendering(const std::shared_ptr<adm::AudioObject>& audioObject);
+
   void processAudioProgramme(const std::shared_ptr<adm::AudioProgramme>& audioProgramme);
   void processAudioObject(const std::shared_ptr<adm::AudioObject>& audioObject);
 
   size_t processBlock(const size_t nbFrames,
                       const float* input,
-                      float* output);
+                      float* output) const;
 
   void toFile(const std::unique_ptr<bw64::Bw64Writer>& outputFile);
+
+  size_t getNbOutputChannels() const { return _outputLayout.channels().size(); }
+
+  std::vector<std::shared_ptr<adm::AudioProgramme>> getDocumentAudioProgrammes();
+  std::vector<std::shared_ptr<adm::AudioObject>> getDocumentAudioObjects();
+
+  std::shared_ptr<bw64::AxmlChunk> getAdmXmlChunk() const;
+  std::shared_ptr<bw64::ChnaChunk> getAdmChnaChunk() const;
 
 private:
   const std::unique_ptr<bw64::Bw64Reader>& _inputFile;
@@ -41,6 +53,7 @@ private:
   const std::string _outputDirectory;
   const float _dialogGain;
 
+  std::shared_ptr<adm::Document> _admDocument;
   std::vector<AudioObjectRenderer> _renderers;
 };
 

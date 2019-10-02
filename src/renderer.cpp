@@ -15,23 +15,26 @@ Renderer::Renderer(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
   , _outputDirectory(outputDirectory)
   , _dialogGain(dialogGain)
 {
+  _admDocument = getAdmDocument(parseAdmXmlChunk(_inputFile));
 }
 
 void Renderer::process() {
-  auto admDocument = getAdmDocument(parseAdmXmlChunk(_inputFile));
-
   /// Based on Rec. ITU-R  BS.2127-0, 5.2 Determination of Rendering Items (Fig. 3)
-  auto audioProgrammes = admDocument->getElements<adm::AudioProgramme>();
+  auto audioProgrammes = getDocumentAudioProgrammes();
   if(audioProgrammes.size()) {
     for(auto audioProgramme : audioProgrammes) {
+      std::cout << "### Render audio programme: " << toString(audioProgramme) << std::endl;
+      initAudioProgrammeRendering(audioProgramme);
       processAudioProgramme(audioProgramme);
     }
     return;
   }
 
-  auto audioObjects = admDocument->getElements<adm::AudioObject>();
+  auto audioObjects = getDocumentAudioObjects();
   if(audioObjects.size()) {
     for(auto audioObject : audioObjects) {
+      std::cout << "### Render audio object: " << toString(audioObject) << std::endl;
+      initAudioObjectRendering(audioObject);
       processAudioObject(audioObject);
     }
     return;
@@ -47,15 +50,46 @@ void Renderer::process() {
   }
 }
 
-void Renderer::processAudioProgramme(const std::shared_ptr<adm::AudioProgramme>& audioProgramme) {
-  std::cout << "### Render audio programme: " << toString(audioProgramme) << std::endl;
+std::vector<std::shared_ptr<adm::AudioProgramme>> Renderer::getDocumentAudioProgrammes() {
+  std::vector<std::shared_ptr<adm::AudioProgramme>> programmes;
+  for(auto programme : _admDocument->getElements<adm::AudioProgramme>()) {
+    programmes.push_back(programme);
+  }
+  return programmes;
+}
 
+std::vector<std::shared_ptr<adm::AudioObject>> Renderer::getDocumentAudioObjects() {
+  std::vector<std::shared_ptr<adm::AudioObject>> objects;
+  for(auto object : _admDocument->getElements<adm::AudioObject>()) {
+    objects.push_back(object);
+  }
+  return objects;
+}
+
+std::shared_ptr<bw64::AxmlChunk> Renderer::getAdmXmlChunk() const {
+  return parseAdmXmlChunk(_inputFile);
+}
+
+std::shared_ptr<bw64::ChnaChunk> Renderer::getAdmChnaChunk() const {
+  return parseAdmChnaChunk(_inputFile);
+}
+
+void Renderer::initAudioProgrammeRendering(const std::shared_ptr<adm::AudioProgramme>& audioProgramme) {
   for(const std::shared_ptr<adm::AudioObject> audioObject : getAudioObjects(audioProgramme)) {
     AudioObjectRenderer renderer(_outputLayout, audioObject);
     std::cout << " >> Add renderer: " << renderer << std::endl;
     _renderers.push_back(renderer);
   }
+}
 
+void Renderer::initAudioObjectRendering(const std::shared_ptr<adm::AudioObject>& audioObject) {
+  AudioObjectRenderer renderer(_outputLayout, audioObject);
+  std::cout << " >> Add renderer: " << renderer << std::endl;
+  _renderers.push_back(renderer);
+}
+
+
+void Renderer::processAudioProgramme(const std::shared_ptr<adm::AudioProgramme>& audioProgramme) {
   // Create output programme ADM
   std::shared_ptr<adm::Document> document = createAdmDocument(audioProgramme, _outputLayout);
   std::shared_ptr<bw64::AxmlChunk> axml = createAxmlChunk(document);
@@ -76,12 +110,6 @@ void Renderer::processAudioProgramme(const std::shared_ptr<adm::AudioProgramme>&
 }
 
 void Renderer::processAudioObject(const std::shared_ptr<adm::AudioObject>& audioObject) {
-  std::cout << "### Render audio object: " << toString(audioObject) << std::endl;
-
-  AudioObjectRenderer renderer(_outputLayout, audioObject);
-  std::cout << " >> Add renderer: " << renderer << std::endl;
-  _renderers.push_back(renderer);
-
   // Create output programme ADM
   std::shared_ptr<adm::Document> document = createAdmDocument(audioObject, _outputLayout);
   std::shared_ptr<bw64::AxmlChunk> axml = createAxmlChunk(document);
@@ -101,7 +129,7 @@ void Renderer::processAudioObject(const std::shared_ptr<adm::AudioObject>& audio
   std::cout << " >> Done: " << outputFileName.str() << std::endl;
 }
 
-size_t Renderer::processBlock(const size_t nbFrames, const float* input, float* output) {
+size_t Renderer::processBlock(const size_t nbFrames, const float* input, float* output) const {
   const size_t outputNbChannels = _outputLayout.channels().size();
   size_t frame = 0;
   size_t read = 0;
