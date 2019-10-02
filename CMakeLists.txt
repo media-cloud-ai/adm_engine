@@ -21,4 +21,4 @@ target_link_libraries(adm_audio_renderer PRIVATE ear)
 
 install(TARGETS adm_audio_renderer DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 install(TARGETS admrenderer DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-install(FILES ${HEADER_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+install(FILES ${HEADER_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/admrenderer)
