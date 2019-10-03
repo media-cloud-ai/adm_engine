@@ -26,8 +26,8 @@ public:
 
   void process();
 
-  void initAudioProgrammeRendering(const std::shared_ptr<adm::AudioProgramme>& audioProgramme, const std::shared_ptr<bw64::ChnaChunk>& chnaChunk);
-  void initAudioObjectRendering(const std::shared_ptr<adm::AudioObject>& audioObject, const std::shared_ptr<bw64::ChnaChunk>& chnaChunk);
+  void initAudioProgrammeRendering(const std::shared_ptr<adm::AudioProgramme>& audioProgramme);
+  void initAudioObjectRendering(const std::shared_ptr<adm::AudioObject>& audioObject);
 
   void processAudioProgramme(const std::shared_ptr<adm::AudioProgramme>& audioProgramme);
   void processAudioObject(const std::shared_ptr<adm::AudioObject>& audioObject);
@@ -54,6 +54,7 @@ private:
   const float _dialogGain;
 
   std::shared_ptr<adm::Document> _admDocument;
+  std::shared_ptr<bw64::ChnaChunk> _chnaChunk;
   std::vector<AudioObjectRenderer> _renderers;
 };
 
