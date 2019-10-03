@@ -21,8 +21,12 @@ float AudioObjectRenderer::getTrackGain(const size_t& inputTrackId, const size_t
   return _inputTrackGains.at(inputTrackId).at(outputTrackId);
 }
 
-void AudioObjectRenderer::setTrackGain(const size_t& inputTrackId, const size_t& outputTrackId, const float& gain) {
-  _inputTrackGains[inputTrackId][outputTrackId] = gain;
+void AudioObjectRenderer::applyUserGain(const float& gain) {
+  for(auto& kv : _inputTrackGains) {
+    for (int i = 0; i < kv.second.size(); ++i) {
+      _inputTrackGains[kv.first][i] *= gain;
+    }
+  }
 }
 
 void AudioObjectRenderer::applyGain(const size_t& inputTrackId, const size_t& outputTrackId, const float& gain) {

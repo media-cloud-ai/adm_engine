@@ -78,6 +78,10 @@ void Renderer::initAudioProgrammeRendering(const std::shared_ptr<adm::AudioProgr
   _renderers.clear();
   for(const std::shared_ptr<adm::AudioObject> audioObject : getAudioObjects(audioProgramme)) {
     AudioObjectRenderer renderer(_outputLayout, audioObject, _chnaChunk);
+    if(audioObject->get<adm::AudioObjectName>().get().find("Dialog") != std::string::npos) {
+      // Apply dialog gain
+      renderer.applyUserGain(_dialogGain);
+    }
     std::cout << " >> Add renderer: " << renderer << std::endl;
     _renderers.push_back(renderer);
   }
@@ -86,6 +90,10 @@ void Renderer::initAudioProgrammeRendering(const std::shared_ptr<adm::AudioProgr
 void Renderer::initAudioObjectRendering(const std::shared_ptr<adm::AudioObject>& audioObject) {
   _renderers.clear();
   AudioObjectRenderer renderer(_outputLayout, audioObject, _chnaChunk);
+  if(audioObject->get<adm::AudioObjectName>().get().find("Dialog") != std::string::npos) {
+    // Apply dialog gain
+    renderer.applyUserGain(_dialogGain);
+  }
   std::cout << " >> Add renderer: " << renderer << std::endl;
   _renderers.push_back(renderer);
 }

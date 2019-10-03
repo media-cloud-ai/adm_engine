@@ -14,7 +14,7 @@ public:
                       const std::shared_ptr<bw64::ChnaChunk>& chnaChunk);
 
   float getTrackGain(const size_t& inputTrackId, const size_t& outputTrackId) const;
-  void setTrackGain(const size_t& inputTrackId, const size_t& outputTrackId, const float& gain);
+  void applyUserGain(const float& gain);
   void applyGain(const size_t& inputTrackId, const size_t& outputTrackId, const float& gain);
 
   size_t getNbOutputTracks() const;
