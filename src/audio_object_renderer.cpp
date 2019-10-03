@@ -3,6 +3,8 @@
 
 #include "parser.hpp"
 
+#include <adm/common_definitions.hpp>
+
 namespace admrenderer {
 
 AudioObjectRenderer::AudioObjectRenderer(const ear::Layout& outputLayout,
@@ -12,31 +14,19 @@ AudioObjectRenderer::AudioObjectRenderer(const ear::Layout& outputLayout,
   , _audioObject(audioObject)
   , _chnaChunk(chnaChunk)
 {
-  for (int i = 0; i < getNbOutputTracks(); ++i)
-  {
-    _trackMapping[i] = std::vector<size_t>();
-    _trackGains[i] = 1.0;
-  }
   init();
 }
 
-std::vector<size_t> AudioObjectRenderer::getTrackMapping(const size_t& outputTrackId) const {
-  return _trackMapping.at(outputTrackId);
-}
-void AudioObjectRenderer::addTrackToMapping(const size_t& outputTrackId, const size_t& inputTrackIds) {
-  _trackMapping[outputTrackId].push_back(inputTrackIds);
+float AudioObjectRenderer::getTrackGain(const size_t& inputTrackId, const size_t& outputTrackId) const {
+  return _inputTrackGains.at(inputTrackId).at(outputTrackId);
 }
 
-float AudioObjectRenderer::getTrackGain(const size_t& outputTrackId) const {
-  return _trackGains.at(outputTrackId);
+void AudioObjectRenderer::setTrackGain(const size_t& inputTrackId, const size_t& outputTrackId, const float& gain) {
+  _inputTrackGains[inputTrackId][outputTrackId] = gain;
 }
 
-void AudioObjectRenderer::setTrackGain(const size_t& outputTrackId, const float& gain) {
-  _trackGains[outputTrackId] = gain;
-}
-
-void AudioObjectRenderer::applyGain(const size_t& outputTrackId, const float& gain) {
-  _trackGains[outputTrackId] *= gain;
+void AudioObjectRenderer::applyGain(const size_t& inputTrackId, const size_t& outputTrackId, const float& gain) {
+  _inputTrackGains[inputTrackId][outputTrackId] *= gain;
 }
 
 size_t AudioObjectRenderer::getNbOutputTracks() const {
@@ -45,9 +35,9 @@ size_t AudioObjectRenderer::getNbOutputTracks() const {
 
 void AudioObjectRenderer::renderAudioFrame(const float* inputFrame, float* outputFrame) {
   for (int oc = 0; oc < getNbOutputTracks(); ++oc) {
-  // for each output channel, apply the mapped input channels...
-    for(const size_t ic : getTrackMapping(oc)) {
-      outputFrame[oc] += inputFrame[ic] * getTrackGain(oc);
+  // for each output channel, apply computed gain to input channels...
+    for(const size_t ic : _inputTrackIds) { // getTrackMapping(oc)
+      outputFrame[oc] += inputFrame[ic] * getTrackGain(ic, oc);
     }
   }
 }
@@ -81,16 +71,31 @@ std::string AudioObjectRenderer::getAudioTrackSpeakerLabel(const std::shared_ptr
   throw std::runtime_error("Not enough content to find speaker label.");
 }
 
-void AudioObjectRenderer::setDirectSpeakerGains() {
+void AudioObjectRenderer::setDirectSpeakerTrackGains(const adm::AudioPackFormatId& audioPackFormatId, const std::shared_ptr<adm::AudioTrackUid>& audioTrackUid) {
+
+  // Add input track id and init gains
+  const size_t inputTrackId = audioTrackUid->get<adm::AudioTrackUidId>().get<adm::AudioTrackUidIdValue>().get() - 1;
+  _inputTrackIds.push_back(inputTrackId);
+  _inputTrackGains[inputTrackId] = std::vector<float>(getNbOutputTracks());
+  for (int i = 0; i < getNbOutputTracks(); ++i) {
+    _inputTrackGains[inputTrackId][i] = 1.0;
+  }
+
+  // Get speaker label
+  const std::string audioPackFormatIdValue = adm::formatId(audioPackFormatId);
+  const std::string speakerLabel = getAudioTrackSpeakerLabel(audioTrackUid);
 
   // calculate gains for direct speakers
+  std::cout << "Compute direct speaker gains for AudioPackFormat: " << audioPackFormatIdValue << ", and speaker label: " << speakerLabel << std::endl;
   ear::GainCalculatorDirectSpeakers speakerGainCalculator(_outputLayout);
-  ear::DirectSpeakersTypeMetadata speakersMetadata;
+  ear::DirectSpeakersTypeMetadata speakersTypeMetadata;
+  speakersTypeMetadata.audioPackFormatID = audioPackFormatIdValue;
+  speakersTypeMetadata.speakerLabels.push_back(speakerLabel);
 
   std::vector<float> gains(getNbOutputTracks());
-  speakerGainCalculator.calculate(speakersMetadata, gains);
+  speakerGainCalculator.calculate(speakersTypeMetadata, gains);
   for (int i = 0; i < gains.size(); ++i) {
-    applyGain(i, gains[i]);
+    applyGain(inputTrackId, i, gains[i]);
   }
 }
 
@@ -111,29 +116,12 @@ void AudioObjectRenderer::init() {
     }
 
     // Render to direct speaker:
-    setDirectSpeakerGains();
     std::vector<std::shared_ptr<adm::AudioTrackUid>> audioTrackUids = getAudioTrackUids(_audioObject);
-
     const adm::AudioPackFormatId audioPackFormatId = audioPackFormat->get<adm::AudioPackFormatId>();
-    checkAudioPackFormatId(audioPackFormatId, audioTrackUids.size());
-
-    switch(audioPackFormatId.get<adm::AudioPackFormatIdValue>().get()) {
-      case 1: // AP_00010001 => urn:itu:bs:775:3:pack:mono_(0+1+0)
-        for (int oc = 0; oc < getNbOutputTracks(); ++oc) {
-          addTrackToMapping(oc, audioTrackUids.at(0)->get<adm::AudioTrackUidId>().get<adm::AudioTrackUidIdValue>().get() - 1);
-        }
-        break;
-
-      case 2: // AP_00010002 => urn:itu:bs:2051:0:pack:stereo_(0+2+0)
-        for (int oc = 0; oc < getNbOutputTracks(); ++oc) {
-          addTrackToMapping(oc, audioTrackUids.at(oc)->get<adm::AudioTrackUidId>().get<adm::AudioTrackUidIdValue>().get() - 1);
-        }
-        break;
-
-      default:
-        std::cerr << "Unsupported audio pack format: " << adm::formatId(audioPackFormatId) << std::endl;
-        exit(1);
+    for(auto audioTrackUid : audioTrackUids) {
+      setDirectSpeakerTrackGains(audioPackFormatId, audioTrackUid);
     }
+    checkAudioPackFormatId(audioPackFormatId, audioTrackUids.size());
   }
 }
 
@@ -161,17 +149,14 @@ void AudioObjectRenderer::checkAudioPackFormatId(const adm::AudioPackFormatId& a
 
 
 std::ostream& operator<<(std::ostream& os, const AudioObjectRenderer& renderer) {
-  os << "Mapping: ";
-  for (const auto& kv : renderer._trackMapping) {
-    os << "{ " << kv.first << " <= ";
-    for(const size_t ic : kv.second) {
-      os << ic << " ";
+  os << "Gains: ";
+  for (const size_t inputTrackId : renderer._inputTrackIds) {
+    os << "{ input track " << inputTrackId << ": " ;
+    std::vector<float> gains = renderer._inputTrackGains.at(inputTrackId);
+    for (int oc = 0; oc < gains.size(); ++oc) {
+      os << "{ oc: " << oc << " => gain: " << gains.at(oc) << " } ";
     }
     os << "} ";
-  }
-  os << " - Gains: ";
-  for (const auto& kv : renderer._trackGains) {
-    os << "{ " << kv.first << " : " << kv.second << " } ";
   }
   return os;
 }

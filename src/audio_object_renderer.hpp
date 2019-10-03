@@ -13,19 +13,18 @@ public:
                       const std::shared_ptr<adm::AudioObject>& audioObject,
                       const std::shared_ptr<bw64::ChnaChunk>& chnaChunk);
 
-  std::vector<size_t> getTrackMapping(const size_t& outputTrackId) const;
-  void addTrackToMapping(const size_t& outputTrackId, const size_t& inputTrackId);
-
-  float getTrackGain(const size_t& outputTrackId) const;
-  void setTrackGain(const size_t& outputTrackId, const float& gain);
-  void applyGain(const size_t& outputTrackId, const float& gain);
+  float getTrackGain(const size_t& inputTrackId, const size_t& outputTrackId) const;
+  void setTrackGain(const size_t& inputTrackId, const size_t& outputTrackId, const float& gain);
+  void applyGain(const size_t& inputTrackId, const size_t& outputTrackId, const float& gain);
 
   size_t getNbOutputTracks() const;
 
   void renderAudioFrame(const float* in, float* out);
 
 private:
-  void setDirectSpeakerGains();
+  std::string getAudioTrackFormatIdSpeakerLabel(const adm::AudioTrackFormatId& audioTrackFormatId);
+  std::string getAudioTrackSpeakerLabel(const std::shared_ptr<adm::AudioTrackUid>& audioTrackUid);
+  void setDirectSpeakerTrackGains(const adm::AudioPackFormatId& audioPackFormatId, const std::shared_ptr<adm::AudioTrackUid>& audioTrackUid);
   void init();
 
   void checkAudioPackFormatId(const adm::AudioPackFormatId& audioPackFormatId, const size_t nbAudioTracks);
@@ -35,12 +34,12 @@ private:
 private:
   const ear::Layout _outputLayout;
   const std::shared_ptr<adm::AudioObject> _audioObject;
-  /// Map of input channels (values) by output channels (keys)
-  std::map<size_t, std::vector<size_t>> _trackMapping;
-  /// Map of gains to apply to input channels (values) by output channels (keys)
-  std::map<size_t, float> _trackGains;
   const std::shared_ptr<bw64::ChnaChunk> _chnaChunk;
 
+  /// Index of input channels
+  std::vector<size_t> _inputTrackIds;
+  /// Output channel gains (values) by input channel indexes (keys)
+  std::map<size_t, std::vector<float>> _inputTrackGains;
 };
 
 std::ostream& operator<<(std::ostream& os, const AudioObjectRenderer& renderer);
