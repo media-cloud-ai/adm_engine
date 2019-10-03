@@ -21,8 +21,8 @@ class Renderer {
 public:
   Renderer(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
            const std::string& outputLayout,
-           const std::string& outputDirectory,
-           const float dialogGain);
+           const std::string& outputDirectory = ".",
+           const float dialogGain = 1.0);
 
   void process();
 
@@ -40,6 +40,7 @@ public:
 
   size_t getNbOutputChannels() const { return _outputLayout.channels().size(); }
 
+  std::shared_ptr<adm::Document> getDocument() const { return _admDocument; };
   std::vector<std::shared_ptr<adm::AudioProgramme>> getDocumentAudioProgrammes();
   std::vector<std::shared_ptr<adm::AudioObject>> getDocumentAudioObjects();
 
