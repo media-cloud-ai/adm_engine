@@ -26,8 +26,8 @@ public:
 
   void process();
 
-  void initAudioProgrammeRendering(const std::shared_ptr<adm::AudioProgramme>& audioProgramme);
-  void initAudioObjectRendering(const std::shared_ptr<adm::AudioObject>& audioObject);
+  void initAudioProgrammeRendering(const std::shared_ptr<adm::AudioProgramme>& audioProgramme, const std::shared_ptr<bw64::ChnaChunk>& chnaChunk);
+  void initAudioObjectRendering(const std::shared_ptr<adm::AudioObject>& audioObject, const std::shared_ptr<bw64::ChnaChunk>& chnaChunk);
 
   void processAudioProgramme(const std::shared_ptr<adm::AudioProgramme>& audioProgramme);
   void processAudioObject(const std::shared_ptr<adm::AudioObject>& audioObject);

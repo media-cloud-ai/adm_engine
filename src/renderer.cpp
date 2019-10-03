@@ -21,10 +21,11 @@ Renderer::Renderer(const std::unique_ptr<bw64::Bw64Reader>& inputFile,
 void Renderer::process() {
   /// Based on Rec. ITU-R  BS.2127-0, 5.2 Determination of Rendering Items (Fig. 3)
   auto audioProgrammes = getDocumentAudioProgrammes();
+  auto chnaChunk = parseAdmChnaChunk(_inputFile);
   if(audioProgrammes.size()) {
     for(auto audioProgramme : audioProgrammes) {
       std::cout << "### Render audio programme: " << toString(audioProgramme) << std::endl;
-      initAudioProgrammeRendering(audioProgramme);
+      initAudioProgrammeRendering(audioProgramme, chnaChunk);
       processAudioProgramme(audioProgramme);
     }
     return;
@@ -34,13 +35,12 @@ void Renderer::process() {
   if(audioObjects.size()) {
     for(auto audioObject : audioObjects) {
       std::cout << "### Render audio object: " << toString(audioObject) << std::endl;
-      initAudioObjectRendering(audioObject);
+      initAudioObjectRendering(audioObject, chnaChunk);
       processAudioObject(audioObject);
     }
     return;
   }
 
-  auto chnaChunk = parseAdmChnaChunk(_inputFile);
   if (chnaChunk) {
     std::vector<bw64::AudioId> audioIds = chnaChunk->audioIds();
     if(audioIds.size()) {
@@ -74,18 +74,18 @@ std::shared_ptr<bw64::ChnaChunk> Renderer::getAdmChnaChunk() const {
   return parseAdmChnaChunk(_inputFile);
 }
 
-void Renderer::initAudioProgrammeRendering(const std::shared_ptr<adm::AudioProgramme>& audioProgramme) {
+void Renderer::initAudioProgrammeRendering(const std::shared_ptr<adm::AudioProgramme>& audioProgramme, const std::shared_ptr<bw64::ChnaChunk>& chnaChunk) {
   _renderers.clear();
   for(const std::shared_ptr<adm::AudioObject> audioObject : getAudioObjects(audioProgramme)) {
-    AudioObjectRenderer renderer(_outputLayout, audioObject);
+    AudioObjectRenderer renderer(_outputLayout, audioObject, chnaChunk);
     std::cout << " >> Add renderer: " << renderer << std::endl;
     _renderers.push_back(renderer);
   }
 }
 
-void Renderer::initAudioObjectRendering(const std::shared_ptr<adm::AudioObject>& audioObject) {
+void Renderer::initAudioObjectRendering(const std::shared_ptr<adm::AudioObject>& audioObject, const std::shared_ptr<bw64::ChnaChunk>& chnaChunk) {
   _renderers.clear();
-  AudioObjectRenderer renderer(_outputLayout, audioObject);
+  AudioObjectRenderer renderer(_outputLayout, audioObject, chnaChunk);
   std::cout << " >> Add renderer: " << renderer << std::endl;
   _renderers.push_back(renderer);
 }

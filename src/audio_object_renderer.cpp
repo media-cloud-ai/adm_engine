@@ -6,9 +6,11 @@
 namespace admrenderer {
 
 AudioObjectRenderer::AudioObjectRenderer(const ear::Layout& outputLayout,
-                      const std::shared_ptr<adm::AudioObject>& audioObject)
+                      const std::shared_ptr<adm::AudioObject>& audioObject,
+                      const std::shared_ptr<bw64::ChnaChunk>& chnaChunk)
   : _outputLayout(outputLayout)
   , _audioObject(audioObject)
+  , _chnaChunk(chnaChunk)
 {
   for (int i = 0; i < getNbOutputTracks(); ++i)
   {
@@ -48,6 +50,35 @@ void AudioObjectRenderer::renderAudioFrame(const float* inputFrame, float* outpu
       outputFrame[oc] += inputFrame[ic] * getTrackGain(oc);
     }
   }
+}
+
+std::string AudioObjectRenderer::getAudioTrackFormatIdSpeakerLabel(const adm::AudioTrackFormatId& audioTrackFormatId) {
+  std::map<std::string, adm::AudioTrackFormatId> audioTrackFormatBySpeakerLabelMap = adm::audioTrackFormatLookupTable();
+  for(auto& entry : audioTrackFormatBySpeakerLabelMap) {
+    if(entry.second == audioTrackFormatId) {
+      std::cout << "Found AudioTrackFormatId " << adm::formatId(audioTrackFormatId) << " speaker label: " << entry.first << std::endl;
+      return entry.first;
+    }
+  }
+  throw std::runtime_error("No speaker label found.");
+}
+
+std::string AudioObjectRenderer::getAudioTrackSpeakerLabel(const std::shared_ptr<adm::AudioTrackUid>& audioTrackUid) {
+  std::shared_ptr<adm::AudioTrackFormat> audioTrackFormat = audioTrackUid->getReference<adm::AudioTrackFormat>();
+  if(audioTrackFormat) {
+    adm::AudioTrackFormatId audioTrackFormatId = audioTrackFormat->get<adm::AudioTrackFormatId>();
+    return getAudioTrackFormatIdSpeakerLabel(audioTrackFormatId);
+  } else if(_chnaChunk) {
+    std::cout << "[WARNING] No AudioTrackFormat into ADM XML. Check into CHNA chunk content..." << std::endl;
+    std::string audioTrackUidStr = adm::formatId(audioTrackUid->get<adm::AudioTrackUidId>());
+    for (auto audioId : _chnaChunk->audioIds()) {
+      if(audioTrackUidStr == audioId.uid()) {
+        adm::AudioTrackFormatId audioTrackFormatId = adm::parseAudioTrackFormatId(audioId.trackRef());
+        return getAudioTrackFormatIdSpeakerLabel(audioTrackFormatId);
+      }
+    }
+  }
+  throw std::runtime_error("Not enough content to find speaker label.");
 }
 
 void AudioObjectRenderer::setDirectSpeakerGains() {

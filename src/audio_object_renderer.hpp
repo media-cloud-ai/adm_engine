@@ -2,6 +2,7 @@
 
 #include <ear/ear.hpp>
 #include <adm/adm.hpp>
+#include <bw64/bw64.hpp>
 
 namespace admrenderer {
 
@@ -9,7 +10,8 @@ class AudioObjectRenderer {
 
 public:
   AudioObjectRenderer(const ear::Layout& outputLayout,
-                      const std::shared_ptr<adm::AudioObject>& audioObject);
+                      const std::shared_ptr<adm::AudioObject>& audioObject,
+                      const std::shared_ptr<bw64::ChnaChunk>& chnaChunk);
 
   std::vector<size_t> getTrackMapping(const size_t& outputTrackId) const;
   void addTrackToMapping(const size_t& outputTrackId, const size_t& inputTrackId);
@@ -37,6 +39,8 @@ private:
   std::map<size_t, std::vector<size_t>> _trackMapping;
   /// Map of gains to apply to input channels (values) by output channels (keys)
   std::map<size_t, float> _trackGains;
+  const std::shared_ptr<bw64::ChnaChunk> _chnaChunk;
+
 };
 
 std::ostream& operator<<(std::ostream& os, const AudioObjectRenderer& renderer);
