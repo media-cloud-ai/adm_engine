@@ -25,9 +25,11 @@ int renderAdmContent(const char* input, const char* destination, const float dia
 }
 
 void displayUsage(const char* application) {
-  std::cout << "Usage: " << application << " INPUT OUTPUT [GAIN]" << std::endl;
+  std::cout << "Usage: " << application << " INPUT [OUTPUT] [GAIN]" << std::endl;
   std::cout << "   with INPUT   BW64/ADM audio file" << std::endl;
-  std::cout << "        OUTPUT  Destination directory" << std::endl;
+  std::cout << "        OUTPUT  Destination directory (optional)" << std::endl;
+  std::cout << "                  - if specified, enable ADM rendering to BW64/ADM file" << std::endl;
+  std::cout << "                  - otherwise, dump input BW64/ADM file information" << std::endl;
   std::cout << "        GAIN    Gain to apply to Dialogue (optional)" << std::endl;
 }
 
