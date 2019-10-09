@@ -1,4 +1,4 @@
-# ADM Audio Renderer
+# ADM Engine
 
 ### Required dependencies
 
@@ -17,7 +17,7 @@ make install
 
 ### Usage
 ```
-Usage: ./adm_audio_renderer INPUT [OUTPUT] [GAIN]
+Usage: ./adm-engine INPUT [OUTPUT] [GAIN]
    with INPUT   BW64/ADM audio file
         OUTPUT  Destination directory (optional)
                   - if specified, enable ADM rendering to BW64/ADM file
