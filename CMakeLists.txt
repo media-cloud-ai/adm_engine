@@ -5,8 +5,8 @@ find_package(Boost 1.57 REQUIRED)
 find_package(adm REQUIRED)
 find_package(ear REQUIRED)
 
-file(GLOB HEADER_FILES ${PROJECT_SOURCE_DIR}/src/*.hpp)
-file(GLOB SOURCE_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp ${HEADER_FILES})
+file(GLOB HEADER_FILES ${PROJECT_SOURCE_DIR}/src/adm_engine/*.hpp)
+file(GLOB SOURCE_FILES ${PROJECT_SOURCE_DIR}/src/adm_engine/*.cpp ${HEADER_FILES})
 
 add_library(admengine STATIC ${SOURCE_FILES})
 target_link_libraries(admengine PRIVATE ear)
@@ -21,4 +21,4 @@ target_link_libraries(adm-engine PRIVATE ear)
 
 install(TARGETS adm-engine DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 install(TARGETS admengine DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-install(FILES ${HEADER_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/admengine)
+install(FILES ${HEADER_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/adm_engine)

@@ -2,8 +2,8 @@
 
 #include <bw64/bw64.hpp>
 
-#include "renderer.hpp"
-#include "parser.hpp"
+#include "adm_engine/renderer.hpp"
+#include "adm_engine/parser.hpp"
 
 using namespace admrenderer;
 
