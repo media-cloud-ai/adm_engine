@@ -33,9 +33,9 @@ RUN git clone https://github.com/IRT-Open-Source/libbw64.git && \
     make && \
     make install
 
-ADD . ./adm_audio_render
+ADD . ./adm_engine
 
-RUN cd adm_audio_render && \
+RUN cd adm_engine && \
     rm -Rf build && \
     mkdir build && \
     cd build && \
@@ -45,14 +45,14 @@ RUN cd adm_audio_render && \
 
 FROM mediacloudai/rs_command_line_worker:latest
 
-COPY --from=builder /usr/local/bin/adm_audio_renderer /app/adm_render/bin/adm_audio_renderer
-COPY --from=builder /usr/local/lib/ /app/adm_render/lib/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libyaml-cpp.so* /app/adm_render/lib/
+COPY --from=builder /usr/local/bin/adm-engine /app/adm_engine/bin/adm-engine
+COPY --from=builder /usr/local/lib/ /app/adm_engine/lib/
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libyaml-cpp.so* /app/adm_engine/lib/
 
-WORKDIR /app/adm_render
+WORKDIR /app/adm_engine
 
-ENV AMQP_QUEUE job_adm_render
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/app/adm_render/lib
-ENV PATH $PATH:/app/adm_render/bin
+ENV AMQP_QUEUE job_adm_engine
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/app/adm_engine/lib
+ENV PATH $PATH:/app/adm_engine/bin
 
 CMD command_line_worker
