@@ -1,6 +1,7 @@
 
 #include "utils.hpp"
 
+#include <map>
 #include <regex>
 
 namespace admengine {
