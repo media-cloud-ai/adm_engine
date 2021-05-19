@@ -34,4 +34,8 @@ std::string replaceSpecialCharacters(std::string& text) {
   return text;
 }
 
+std::unique_ptr<bw64::Bw64Reader> openBw64File(const std::string& path) {
+  return bw64::readFile(path);
+}
+
 }
