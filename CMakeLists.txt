@@ -21,9 +21,6 @@ set_target_properties(admengine_static PROPERTIES OUTPUT_NAME admengine)
 
 include_directories("${PROJECT_SOURCE_DIR}/src")
 
-add_library(admengineworker SHARED ${SOURCE_FILES} ${PROJECT_SOURCE_DIR}/src/adm_worker/worker.cpp)
-target_link_libraries(admengineworker PRIVATE admengine)
-
 add_executable(adm-engine app/main.cpp)
 target_link_libraries(adm-engine PRIVATE admengine_static)
 target_link_libraries(adm-engine PRIVATE adm)
@@ -31,5 +28,4 @@ target_link_libraries(adm-engine PRIVATE ear)
 
 install(TARGETS adm-engine DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 install(TARGETS admengine DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-install(TARGETS admengineworker DESTINATION ${CMAKE_INSTALL_PREFIX}/worker)
 install(FILES ${HEADER_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/adm_engine)
