@@ -8,10 +8,16 @@ find_package(ear REQUIRED)
 file(GLOB HEADER_FILES ${PROJECT_SOURCE_DIR}/src/adm_engine/*.hpp)
 file(GLOB SOURCE_FILES ${PROJECT_SOURCE_DIR}/src/adm_engine/*.cpp ${HEADER_FILES})
 
-add_library(admengine STATIC ${SOURCE_FILES})
+add_library(admengine SHARED ${SOURCE_FILES})
 target_link_libraries(admengine PRIVATE ear)
 target_link_libraries(admengine PRIVATE adm)
 set_property(TARGET admengine PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+add_library(admengine_static STATIC ${SOURCE_FILES})
+target_link_libraries(admengine_static PRIVATE ear)
+target_link_libraries(admengine_static PRIVATE adm)
+set_property(TARGET admengine_static PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_target_properties(admengine_static PROPERTIES OUTPUT_NAME admengine)
 
 include_directories("${PROJECT_SOURCE_DIR}/src")
 
@@ -19,7 +25,7 @@ add_library(admengineworker SHARED ${SOURCE_FILES} ${PROJECT_SOURCE_DIR}/src/adm
 target_link_libraries(admengineworker PRIVATE admengine)
 
 add_executable(adm-engine app/main.cpp)
-target_link_libraries(adm-engine PRIVATE admengine)
+target_link_libraries(adm-engine PRIVATE admengine_static)
 target_link_libraries(adm-engine PRIVATE adm)
 target_link_libraries(adm-engine PRIVATE ear)
 
