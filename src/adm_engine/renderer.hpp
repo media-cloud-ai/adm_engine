@@ -25,6 +25,9 @@ public:
            const std::map<std::string, float> elementGains = {},
            const std::string& elementIdToRender = "");
 
+  void setElementToRender(const std::string& elementIdToRender) { _elementIdToRender = elementIdToRender; }
+  void setElementGain(const std::string& elementId, const float& gain) { _elementGainsMap[elementId] = gain; }
+
   void process();
 
   void initAudioProgrammeRendering(const std::shared_ptr<adm::AudioProgramme>& audioProgramme);
@@ -61,8 +64,9 @@ private:
   const size_t _inputNbChannels;
   const ear::Layout _outputLayout;
   const std::string _outputDirectory;
-  const std::map<std::string, float> _elementGainsMap;
-  const std::string _elementIdToRender;
+
+  std::map<std::string, float> _elementGainsMap;
+  std::string _elementIdToRender;
 
   std::shared_ptr<adm::Document> _admDocument;
   std::shared_ptr<bw64::ChnaChunk> _chnaChunk;
