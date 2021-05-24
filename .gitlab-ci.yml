@@ -8,7 +8,7 @@ deps:libear:
   stage: deps
 
   before_script:
-    - apt update && apt -y cmake libboost-dev
+    - apt update && apt install -y cmake libboost-dev
   script:
     - git clone --recursive https://github.com/ebu/libear.git && cd libear/
     - mkdir build && cd build
@@ -24,7 +24,7 @@ deps:libadm:
   stage: deps
 
   before_script:
-    - apt update && apt -y cmake libboost-dev
+    - apt update && apt install -y cmake libboost-dev
   script:
     - git clone --branch 0.11.0 https://github.com/IRT-Open-Source/libadm.git && cd libadm/
     - mkdir build && cd build
@@ -40,7 +40,7 @@ deps:libbw64:
   stage: deps
 
   before_script:
-    - apt update && apt -y cmake libboost-dev
+    - apt update && apt install -y cmake libboost-dev
   script:
     - git clone --branch 0.10.0 https://github.com/IRT-Open-Source/libbw64.git && cd libbw64/
     - mkdir build && cd build
@@ -56,7 +56,7 @@ build:
   stage: build
 
   before_script:
-    - apt update && apt -y cmake libboost-dev
+    - apt update && apt install -y cmake libboost-dev
   script:
     - mkdir build && cd build
     - cmake ..
