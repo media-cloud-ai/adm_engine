@@ -12,13 +12,13 @@ deps:libear:
   script:
     - git clone --recursive https://github.com/ebu/libear.git && cd libear/
     - mkdir build && cd build
-    - cmake ..
+    - cmake .. -DCMAKE_INSTALL_PREFIX=../install
     - make install
 
   artifacts:
     paths:
-      - /usr/local/lib/libear.a
-      - /usr/local/include/ear
+      - ./install/libear.a
+      - ./install/include
 
 deps:libadm:
   stage: deps
@@ -28,13 +28,13 @@ deps:libadm:
   script:
     - git clone --branch 0.11.0 https://github.com/IRT-Open-Source/libadm.git && cd libadm/
     - mkdir build && cd build
-    - cmake ..
+    - cmake .. -DCMAKE_INSTALL_PREFIX=../install
     - make install
 
   artifacts:
     paths:
-      - /usr/local/lib/libadm.a
-      - /usr/local/include/adm
+      - ./install/lib/libadm.a
+      - ./install/include
 
 deps:libbw64:
   stage: deps
@@ -44,12 +44,12 @@ deps:libbw64:
   script:
     - git clone --branch 0.10.0 https://github.com/IRT-Open-Source/libbw64.git && cd libbw64/
     - mkdir build && cd build
-    - cmake ..
+    - cmake .. -DCMAKE_INSTALL_PREFIX=../install
     - make install
 
   artifacts:
     paths:
-      - /usr/local/include/bw64
+      - ./install/include
 
 
 build:
@@ -59,7 +59,7 @@ build:
     - apt update && apt install -y cmake libboost-dev
   script:
     - mkdir build && cd build
-    - cmake ..
+    - cmake .. -DCMAKE_INSTALL_PREFIX=../install
     - make install
   needs: [
     "deps:libear",
@@ -68,7 +68,7 @@ build:
   ]
   artifacts:
     paths:
-      - /usr/local/bin/adm-engine
-      - /usr/local/lib/libadmengine.so
-      - /usr/local/lib/libadmengine.a
-      - /usr/local/include/adm_engine
+      - ./install/bin/adm-engine
+      - ./install/lib/libadmengine.so
+      - ./install/lib/libadmengine.a
+      - ./install/include
