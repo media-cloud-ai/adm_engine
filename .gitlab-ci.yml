@@ -1,0 +1,74 @@
+image: gcc:9.3.0-buster
+
+stages:
+  - deps
+  - build
+
+deps:libear:
+  stage: deps
+
+  before_script:
+    - apt update && apt -y cmake libboost-dev
+  script:
+    - git clone --recursive https://github.com/ebu/libear.git && cd libear/
+    - mkdir build && cd build
+    - cmake ..
+    - make install
+
+  artifacts:
+    paths:
+      - /usr/local/lib/libear.a
+      - /usr/local/include/ear
+
+deps:libadm:
+  stage: deps
+
+  before_script:
+    - apt update && apt -y cmake libboost-dev
+  script:
+    - git clone --branch 0.11.0 https://github.com/IRT-Open-Source/libadm.git && cd libadm/
+    - mkdir build && cd build
+    - cmake ..
+    - make install
+
+  artifacts:
+    paths:
+      - /usr/local/lib/libadm.a
+      - /usr/local/include/adm
+
+deps:libbw64:
+  stage: deps
+
+  before_script:
+    - apt update && apt -y cmake libboost-dev
+  script:
+    - git clone --branch 0.10.0 https://github.com/IRT-Open-Source/libbw64.git && cd libbw64/
+    - mkdir build && cd build
+    - cmake ..
+    - make install
+
+  artifacts:
+    paths:
+      - /usr/local/include/bw64
+
+
+build:
+  stage: build
+
+  before_script:
+    - apt update && apt -y cmake libboost-dev
+  script:
+    - mkdir build && cd build
+    - cmake ..
+    - make install
+  needs: [
+    "deps:libear",
+    "deps:libadm",
+    "deps:libbw64"
+  ]
+  artifacts:
+    paths:
+      - /usr/local/bin/adm-engine
+      - /usr/local/lib/libadmengine.so
+      - /usr/local/lib/libadmengine.a
+      - /usr/local/include/adm_engine
