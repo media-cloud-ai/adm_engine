@@ -1,0 +1,146 @@
+image: gcc:9.3.0-buster
+
+variables:
+  FORCE_DEPENDENCIES_BUILD: "false"
+
+stages:
+  - dependencies
+  - build
+
+deps:libear:
+  stage: dependencies
+
+  before_script:
+    - ls -l
+    - apt update
+    - apt install -y cmake libboost-dev
+    # Check cache: delete it if necessary or skip job
+    - >
+      if [ -d "./libear" ]; then
+        if [ "$FORCE_DEPENDENCIES_BUILD" = true ]; then
+          rm -Rf ./libear
+        else
+          echo "Skip libear build job (already cached)."
+          exit 0
+        fi
+      fi
+  script:
+    - git clone --recursive https://github.com/ebu/libear.git
+    - cd libear/
+    - mkdir build
+    - cd build
+    - cmake .. -DCMAKE_INSTALL_PREFIX=../install
+    - make install
+
+  cache:
+    key: libear-cache
+    paths:
+      - ./libear/install/
+
+deps:libadm:
+  stage: dependencies
+
+  before_script:
+    - ls -l
+    - apt update
+    - apt install -y cmake libboost-dev
+    # Check cache: delete it if necessary or skip job
+    - >
+      if [ -d "./libadm" ]; then
+        if [ "$FORCE_DEPENDENCIES_BUILD" = true ]; then
+          rm -Rf ./libadm
+        else
+          echo "Skip libadm build job (already cached)."
+          exit 0
+        fi
+      fi
+  script:
+    - git clone --branch 0.11.0 https://github.com/IRT-Open-Source/libadm.git
+    - cd libadm/
+    - mkdir build
+    - cd build
+    - cmake .. -DCMAKE_INSTALL_PREFIX=../install
+    - make install
+
+  cache:
+    key: libadm-cache
+    paths:
+      - ./libadm/install/
+
+deps:libbw64:
+  stage: dependencies
+
+  before_script:
+    - ls -l
+    - apt update
+    - apt install -y cmake libboost-dev
+    # Check cache: delete it if necessary or skip job
+    - >
+      if [ -d "./libbw64" ]; then
+        if [ "$FORCE_DEPENDENCIES_BUILD" = true ]; then
+          rm -Rf ./libbw64;
+        else
+          echo "Skip libbw64 build job (already cached)."
+          exit 0
+        fi
+      fi
+  script:
+    - git clone --branch 0.10.0 https://github.com/IRT-Open-Source/libbw64.git
+    - cd libbw64/
+    - mkdir build
+    - cd build
+    - cmake .. -DCMAKE_INSTALL_PREFIX=../install
+    - make install
+
+  cache:
+    key: libbw64-cache
+    paths:
+      - ./libbw64/install/
+
+
+build:
+  stage: build
+
+  needs: [
+    "deps:libear",
+    "deps:libadm",
+    "deps:libbw64"
+  ]
+
+  cache:
+    - key: libear-cache
+      paths:
+        - libear
+      policy: pull
+
+    - key: libadm-cache
+      paths:
+        - libadm
+      policy: pull
+
+    - key: libbw64-cache
+      paths:
+        - libbw64
+      policy: pull
+
+  before_script:
+    - ls -lR
+    - apt update
+    - apt install -y cmake libboost-dev
+
+  script:
+    - mkdir build
+    - cd build
+    - >
+      cmake .. \
+        -DCMAKE_PREFIX_PATH="`pwd`/../libear/install;`pwd`/../libadm/install;`pwd`/../libbw64/install"  \
+        -DCMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES="`pwd`/../libbw64/install/include" \
+        -DCMAKE_INSTALL_PREFIX=../install
+    - make install
+
+  artifacts:
+    paths:
+      - ./install/bin/adm-engine
+      - ./install/lib/libadmengine.so
+      - ./install/lib/libadmengine.a
+      - ./install/include

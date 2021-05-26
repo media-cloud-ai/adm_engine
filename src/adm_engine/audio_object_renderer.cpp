@@ -23,7 +23,7 @@ float AudioObjectRenderer::getTrackGain(const size_t& inputTrackId, const size_t
 
 void AudioObjectRenderer::applyUserGain(const float& gain) {
   for(auto& kv : _inputTrackGains) {
-    for (int i = 0; i < kv.second.size(); ++i) {
+    for (size_t i = 0; i < kv.second.size(); ++i) {
       _inputTrackGains[kv.first][i] *= gain;
     }
   }
@@ -38,7 +38,7 @@ size_t AudioObjectRenderer::getNbOutputTracks() const {
 }
 
 void AudioObjectRenderer::renderAudioFrame(const float* inputFrame, float* outputFrame) {
-  for (int oc = 0; oc < getNbOutputTracks(); ++oc) {
+  for (size_t oc = 0; oc < getNbOutputTracks(); ++oc) {
   // for each output channel, apply computed gain to input channels...
     for(const size_t ic : _inputTrackIds) { // getTrackMapping(oc)
       outputFrame[oc] += inputFrame[ic] * getTrackGain(ic, oc);
@@ -114,7 +114,7 @@ void AudioObjectRenderer::setDirectSpeakerTrackGains(const adm::AudioPackFormatI
   const size_t inputTrackId = audioTrackUid->get<adm::AudioTrackUidId>().get<adm::AudioTrackUidIdValue>().get() - 1;
   _inputTrackIds.push_back(inputTrackId);
   _inputTrackGains[inputTrackId] = std::vector<float>(getNbOutputTracks());
-  for (int i = 0; i < getNbOutputTracks(); ++i) {
+  for (size_t i = 0; i < getNbOutputTracks(); ++i) {
     _inputTrackGains[inputTrackId][i] = 1.0;
   }
 
@@ -131,7 +131,7 @@ void AudioObjectRenderer::setDirectSpeakerTrackGains(const adm::AudioPackFormatI
 
   std::vector<float> gains(getNbOutputTracks());
   speakerGainCalculator.calculate(speakersTypeMetadata, gains);
-  for (int i = 0; i < gains.size(); ++i) {
+  for (size_t i = 0; i < gains.size(); ++i) {
     applyGain(inputTrackId, i, gains[i]);
   }
 }
@@ -190,7 +190,7 @@ std::ostream& operator<<(std::ostream& os, const AudioObjectRenderer& renderer) 
   for (const size_t inputTrackId : renderer._inputTrackIds) {
     os << "{ input track " << inputTrackId << ": " ;
     std::vector<float> gains = renderer._inputTrackGains.at(inputTrackId);
-    for (int oc = 0; oc < gains.size(); ++oc) {
+    for (size_t oc = 0; oc < gains.size(); ++oc) {
       os << "{ oc: " << oc << " => gain: " << gains.at(oc) << " } ";
     }
     os << "} ";

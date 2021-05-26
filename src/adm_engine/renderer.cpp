@@ -166,7 +166,6 @@ void Renderer::processAudioObject(const std::shared_ptr<adm::AudioObject>& audio
 }
 
 size_t Renderer::processBlock(const size_t nbFrames, const float* input, float* output) const {
-  const size_t outputNbChannels = _outputLayout.channels().size();
   size_t frame = 0;
   size_t read = 0;
   size_t written = 0;

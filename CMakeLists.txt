@@ -28,4 +28,5 @@ target_link_libraries(adm-engine PRIVATE ear)
 
 install(TARGETS adm-engine DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 install(TARGETS admengine DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS admengine_static DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(FILES ${HEADER_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/adm_engine)
