@@ -67,7 +67,7 @@ int process_rendering(const char* source_path,
     Renderer renderer(bw64File, outputLayout, destination_path);
 
     if (gain_mapping != NULL && gain_mapping_size != 0) {
-      for (int i = 0; i < gain_mapping_size; ++i) {
+      for (unsigned int i = 0; i < gain_mapping_size; ++i) {
         const ElementGainEntry gain_entry = gain_mapping[i];
         renderer.setElementGain(gain_entry.element_id, gain_entry.gain);
       }
