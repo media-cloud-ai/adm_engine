@@ -127,7 +127,7 @@ build:
     - ls -lR
     - apt update
     - apt install -y cmake libboost-dev
-    # libyaml-cpp-dev
+
   script:
     - mkdir build
     - cd build
